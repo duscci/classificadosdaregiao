@@ -1,0 +1,23 @@
+{
+  "name": "classificadosdaregiao",
+  "version": "1.0.0",
+  "description": "Transforma o feed Rss do Classificados do Diario da Região em JSON",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "diario da região",
+    "classificados",
+    "rio preto",
+    "são josé do rio preto"
+  ],
+  "author": "Valdir Ronis",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "express": "^4.17.1",
+    "lodash": "^4.17.21",
+    "xml2js": "^0.4.23"
+  }
+}

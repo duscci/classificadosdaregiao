@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classificados</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.0-beta2/css/bootstrap.min.css"
+        integrity="sha512-aqT9YD5gLuLBr6ipQAS+72o5yHKzgZbGxEh6iY8lW/r6gG14e2kBTAJb8XrxzZrMOgSmDqtLaF76T0Z6YY2IHg=="
+        crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="container" id="app">
+        <div class="row">
+            <div class="col-md-4">
+                <h1 class="display-1 text-center">Classificados</h1>
+                <div class="pb-4 text-center">
+                    <a href="https://www.classitudodiariodaregiao.com.br/anuncie" target="_blank"
+                        class="btn btn-success">Anuncie</a>
+                    <a href="https://www.classitudodiariodaregiao.com.br/termos-de-uso" target="_blank"
+                        class="btn btn-success">Termos de uso</a>
+                    <a href="https://www.classitudodiariodaregiao.com.br/conta/entrar" target="_blank"
+                        class="btn btn-success">Área do anunciante</a>
+                </div>
+                <div class="form-floating">
+                    <select name="target" class="form-select">
+                        <option>Carregando...</option>
+                    </select>
+                    <label for="floatingSelect">Quero ver...</label>
+                </div>
+                <div class="form-floating">
+                    <select name="sections" class="form-select">
+                        <option></option>
+                    </select>
+                    <label for="floatingSelect">Seção</label>
+                </div>
+            </div>
+            <div class="col-md-8 py-4">
+                <div class="row row-cols-1 row-cols-md-2 g-4 feed"></div>
+            </div>
+        </div>
+    </div>
+    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.9.0/lodash.min.js'
+        integrity='sha512-0iCeIPM9ajKhqFvinM6o+J0hi/Slc21bjS9gPghWAn4dHO8kk1aX9n7c6pNdhsURkc0iC/6R58awhL1WU8NKmQ=='
+        crossorigin='anonymous'></script>
+    <script>
+        let items = [];
+        let activeItems = [];
+
+        const Targets = document.querySelector("[name=target]");
+        const Sections = document.querySelector("[name=sections]");
+
+        fetch("/feed")
+            .then((response) => response.json())
+            .then((feed) => {
+                const selectOne = Targets.querySelector("option");
+                selectOne.setAttribute("disabled", true);
+                selectOne.text = "Selecione...";
+                Object.keys(feed).map((target, index) => {
+                    const option = document.createElement("option");
+                    option.value = target;
+                    option.text = target;
+                    if (!index) option.setAttribute("selected", true);
+                    Targets.add(option);
+                });
+                items = feed;
+                Targets.dispatchEvent(new Event("change"));
+            })
+            .catch(console.error);
+
+        Targets.addEventListener("change", (e) => {
+            const target = items[e.target.value];
+            if (target) {
+                activeItems = _.groupBy(target, "title");
+                if (activeItems) {
+                    Sections.innerHTML = "<option disabled>Selecione...</otion>";
+                    Object.keys(activeItems).map((item, index) => {
+                        const option = document.createElement("option");
+                        option.value = item;
+                        option.text = item;
+                        if (!index) option.setAttribute("selected", true);
+                        Sections.add(option);
+                    });
+                    Sections.dispatchEvent(new Event("change"));
+                }
+            }
+        });
+
+        Sections.addEventListener("change", (e) => {
+            const feed = document.querySelector(".feed");
+            const posts = activeItems[e.target.value];
+            if (posts) {
+                feed.innerHTML = "";
+                posts.map(post => {
+                    const el = document.createElement("div");
+                    el.classList.add("col");
+                    el.innerHTML = `
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">${post.title}</h5>
+        <p class="card-text">${post.description}</p>
+        <a href="${post.link}" class="btn btn-primary">Acessar</a>
+    </div>
+</div>
+                    `;
+                    feed.append(el);
+                });
+                new Masonry(document.querySelector('.feed'), {
+                    itemSelector: '.col'
+                });
+                feed.scrollIntoView({ block: "start", behavior: "smooth" })
+            }
+        });
+    </script>
+</body>
+
+</html>
